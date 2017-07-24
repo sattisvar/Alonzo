@@ -44,3 +44,13 @@ def test_add():
     assert (_0 + 1)(1) == 2
     assert (1 + _0)(1) == 2
     assert (_0 + _1)(1)(2) == 3
+    
+def test_eq():
+    _0 = PlaceHolder()
+    _1 = PlaceHolder()
+    assert (_0 == _1)(1)(1)
+    assert not (_0 == _1)(9)(2)
+    assert (_0 == 1)(1)
+    assert not (_0 == 2)(1)
+    assert (1 == _0)(1)
+    assert not (2 == _0)(1)
