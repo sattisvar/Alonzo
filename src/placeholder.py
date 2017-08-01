@@ -1,40 +1,54 @@
-from tools import flip, noflip, aritylambda
+from tools import flip, noflip, aritylambda, valuefunc
+from functools import partial
 
-def myf(*args):
-    return args
-
-assert aritylambda(5, myf)(1)(2)(3)(4)(5) == (1, 2, 3, 4, 5)
 
 class PlaceHolder:
     max_index = 0
 
-    def __init__(self, index=None, result=lambda x: x, arity=1):
-        self.result = result
-        self.arity = arity
-        self.index = index or PlaceHolder.max_index
+    def __init__(self, index=None, result=None, arity=None):
         if index is None:
+            self.index = PlaceHolder.max_index
             PlaceHolder.max_index += 1
-
+        else:
+            self.index = index
+        if arity is not None:
+            self.arity = arity
+        elif self.index is not None:
+            self.arity = self.index + 1
+        else:
+            self.arity = 1
+        self.result = result or valuefunc(self.arity)
+            
     def __call__(self, *args):
-        return self.result(*args)
-
+        app = []
+        phs = []
+        ph = 0
+        for arg in args:
+            if isinstance(arg, PlaceHolder):
+                phs += [ph]
+                app += [ lambda precf: lambda argat: lambda tph: aritylambda(tph, lambda *precarg: partial(precf(*precarg), argat(*argu))) ]
+                ph += 1
+            else:
+                phs += [ph]
+                app += [ lambda precf: lambda argat: lambda tph: aritylambda(tph, lambda *precarg: partial(precf(*precarg), argat)) ]
+        to_return = self.result
+        for napp, argsat, phsat in zip(app, args, phs):
+            to_return = napp(to_return)(argsat)(phsat)
+        return to_return()
+    
     def compose(self, other, f):
         if isinstance(other, PlaceHolder):
             if self.index < other.index:
                 left, right, flipper = self, other, noflip
             else:
                 left, right, flipper = other, self, flip
+            newarity = max(left.arity, right.arity)
             return PlaceHolder(index=left.index,
-                               arity=left.arity + right.arity,
-                               result=aritylambda(left.arity,
-                                                  lambda *leftarg:
-                                                      PlaceHolder(index=right.index,
-                                                                  arity=right.arity,
-                                                                  result=aritylambda(right.arity,
-                                                                                     lambda *rightarg:
-                                                                                         flipper(f)(left.result(*leftarg), right.result(*rightarg))))))
+                               arity=newarity,
+                               result=aritylambda(newarity,
+                                                  lambda *arg: flipper(f)(left(*arg), right(*arg))))
         else:
-            return PlaceHolder(index=self.index, arity=self.arity, result=aritylambda(self.arity, lambda *argsx: f(self.result(*argsx), other)))
+            return PlaceHolder(index=self.index, arity=self.arity, result=lambda *arg: f(self(*arg), other))
 
     def __getitem__(self, other):
         return self.compose(other, lambda x, y: x[y])
@@ -78,44 +92,22 @@ class PlaceHolder:
     def __rtruediv__(self, other):
         return self.compose(other, lambda x, y: y / x)
 
-# assert (_0[0])([1, 2]) == 1
-# assert ([1, 2][_0])(0) == 1
+    def __floordiv__(self, other):
+        return self.compose(other, lambda x, y: x // y)
+    
+    def __rfloordiv__(self, other):
+        return self.compose(other, lambda x, y: y // x)
 
-# # assert not (_0 > _1)(0)(1)
+    def __mod__(self, other):
+        return self.compose(other, lambda x, y: x % y)
+    
+    def __rmod__(self, other):
+        return self.compose(other, lambda x, y: y % x)
 
-# if False:
-
-#     assert (_0 == _1)(1)(1)
-#     assert not (_0 == _1)(9)(2)
-#     assert (_0 == 1)(1)
-#     assert not (_0 == 2)(1)
-#     assert (1 == _1)(1)
-#     assert not (2 == _1)(1)
-
-#     assert (_1 + 1)(1) == 2
-#     assert (1 + _1)(1) == 2
-#     assert (_1 + _0)(1)(2) == 3
-
-#     assert (_1 - 1)(1) == 0
-#     assert (1 - _1)(1) == 0
-#     assert (_1 - _0)(1)(2) == 1
-#     assert (_0 - _1)(1)(2) == -1
-
-#     assert (_1 * 1)(1) == 1
-#     assert (1 * _1)(1) == 1
-#     assert (_1 * _0)(1)(2) == 2
-
-#     assert (_1 / 2)(2) == 1
-#     assert (2 / _1)(1) == 2
-#     assert (_1 / _0)(2)(4) == 2
-#     assert (_0 / _1)(6)(3) == 2
+    def __pow__(self, other):
+        return self.compose(other, lambda x, y: x ** y)
+    
+    def __rpow__(self, other):
+        return self.compose(other, lambda x, y: y ** x)
 
 
-#     _2 = PlaceHolder()
-
-#     assert (_0 * _1 * _2)(2)(3)(4) == 24
-#     assert (_1 + _0 * _2)(4)(3)(2) == 11
-#     assert (_0 + _1 * _2)(4)(3)(2) == 10
-#     assert ((_0 + _1) * _2)(2)(3)(4) == 20
-
-# print('...OK')
