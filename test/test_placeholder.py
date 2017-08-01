@@ -53,13 +53,6 @@ def test_le():
     assert (_1 <= _0)(1)(1)
     assert (_0 <= _1)(0)(1)
 
-def test_add():
-    _0 = PlaceHolder()
-    _1 = PlaceHolder()
-    assert (_0 + 1)(1) == 2
-    assert (1 + _0)(1) == 2
-    assert (_0 + _1)(1)(2) == 3
-    
 def test_eq():
     assert (_0 == _1)(1)(1)
     assert not (_0 == _1)(9)(2)
