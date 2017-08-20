@@ -53,6 +53,28 @@ def test_le():
     assert (_1 <= _0)(1)(1)
     assert (_0 <= _1)(0)(1)
 
+def test_add():
+    assert (_0 + 1)(1) == 2
+    assert (1 + _0)(1) == 2
+    assert (_0 + _1)(1)(2) == 3
+
+def test_sub():
+    assert (_0 - 1)(1) == 0
+    assert (1 - _0)(2) == -1
+    assert (_0 - _1)(2)(1) == 1
+    assert (_1 - _0)(2)(1) == -1
+
+def test_mul():
+    assert (_0 * 1)(1) == 1
+    assert (1 * _0)(1) == 1
+    assert (_0 * _1)(1)(2) == 2
+
+def test_truediv():
+    assert (_0 / 1)(1) == 1
+    assert (1 / _0)(2) == .5
+    assert (_0 / _1)(2)(1) == 2
+    assert (_1 / _0)(2)(1) == .5
+
 def test_eq():
     assert (_0 == _1)(1)(1)
     assert not (_0 == _1)(9)(2)
@@ -61,16 +83,17 @@ def test_eq():
     assert (1 == _0)(1)
     assert not (2 == _0)(1)
 
-def test_add():
-    assert (_0 + 1)(1) == 2
-    assert (1 + _0)(1) == 2
-    assert (_1 + _0)(1)(2) == 3
+def test_triple():
+    assert (_0 + _1 * _2)(2)(3)(4) == 14
+    assert (_1 + _2 * _0)(2)(3)(4) == 11
+    assert (_2 + _0 * _1)(2)(3)(4) == 10
+    assert (_0 + _2 * _1)(2)(3)(4) == 14
+    assert (_1 + _0 * _2)(2)(3)(4) == 11
+    assert (_2 + _1 * _0)(2)(3)(4) == 10
 
-def test_sub():
-    assert (_0 - 1)(1) == 0
-    assert (1 - _0)(1) == 0
-    assert (_1 - _0)(1)(2) == 1
-    assert (_0 - _1)(1)(2) == -1
+def test_double():
+    _0 = PlaceHolder()
+    assert (_0 * _0)(3) == 9
 
 def test_mul():
     assert (_0 * 1)(1) == 1
