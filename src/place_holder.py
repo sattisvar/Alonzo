@@ -1,24 +1,23 @@
+import operator
+
 def identity_func(x):
     return x
 
-class PlaceHolderBuilder():
-    def __init__(self):
-        pass
-
-    def __getitem__(self, item_key):
-        if callable(item_key):
-            return PlaceHolder(0)(item_key)
-        else:
+def _(item_key):
+    if callable(item_key):
+        return PlaceHolder(0)(item_key)
+    elif isinstance(item_key, str):
+        return PlaceHolder(item_key)
+    else:
+        try:
+            iterator = iter(item_key)
+            return PlaceHolder(action=lambda *x, **y: item_key, arg_name=-1)
+        except TypeError:
             return PlaceHolder(item_key)
-        
-    def __call__(self):
-        pass
-
-_ = PlaceHolderBuilder()
 
 class PlaceHolder():
     value = 0
-    
+
     def __init__(self, arg_name=None, action=None):
         if action is None:
             self.action = identity_func
@@ -34,7 +33,7 @@ class PlaceHolder():
     @staticmethod
     def reset():
         PlaceHolder.value = 0
-        
+
     def __call__(self, *args, **kwargs):
         if self.arg_pos == -1:
             return self.action(*args, **kwargs)
@@ -44,72 +43,92 @@ class PlaceHolder():
             else:
                 return self.action(kwargs[self.arg_pos])
 
-    @staticmethod
-    def compose_2(f):
-        def _compose_2(me, other):
-            if isinstance(other, PlaceHolder):
-                return PlaceHolder(action=lambda *x, **y: f(me(*x, **y), other(*x, **y)), arg_name=-1)
-            else:
-                return PlaceHolder(action=lambda *x, **y: f(me(*x, **y), other), arg_name=me.arg_pos)
-        return _compose_2
-        
+    def compose_2(self, f, other):
+        if isinstance(other, PlaceHolder):
+            return PlaceHolder(action=lambda *x, **y: f(self(*x, **y), other(*x, **y)), arg_name=-1)
+        else:
+            return PlaceHolder(action=lambda *x, **y: f(self(*x, **y), other), arg_name=self.arg_pos)
+
+    def compose_1(self, f):
+        return PlaceHolder(action=lambda *x, **y: f(self(*x, **y)), arg_name=self.arg_pos)
+
     def __add__(self, other):
-        return self.compose_2(lambda a, b: a + b)(self, other)
+        return self.compose_2(lambda a, b: a + b, other)
 
     def __radd__(self, other):
-        return self.compose_2(lambda a, b: b + a)(self, other)
+        return self.compose_2(lambda a, b: b + a, other)
 
     def __sub__(self, other):
-        return self.compose_2(lambda a, b: a - b)(self, other)
+        return self.compose_2(lambda a, b: a - b, other)
 
     def __rsub__(self, other):
-        return self.compose_2(lambda a, b: b - a)(self, other)
+        return self.compose_2(lambda a, b: b - a, other)
 
     def __mul__(self, other):
-        return self.compose_2(lambda a, b: a * b)(self, other)
+        return self.compose_2(lambda a, b: a * b, other)
 
     def __rmul__(self, other):
-        return self.compose_2(lambda a, b: b * a)(self, other)
+        return self.compose_2(lambda a, b: b * a, other)
 
     def __truediv__(self, other):
-        return self.compose_2(lambda a, b: a / b)(self, other)
+        return self.compose_2(lambda a, b: a / b, other)
 
     def __rtruediv__(self, other):
-        return self.compose_2(lambda a, b: b / a)(self, other)
+        return self.compose_2(lambda a, b: b / a, other)
 
     def __floordiv__(self, other):
-        return self.compose_2(lambda a, b: a // b)(self, other)
+        return self.compose_2(lambda a, b: a // b, other)
 
     def __rfloordiv__(self, other):
-        return self.compose_2(lambda a, b: b // a)(self, other)
+        return self.compose_2(lambda a, b: b // a, other)
 
     def __mod__(self, other):
-        return self.compose_2(lambda a, b: a % b)(self, other)
+        return self.compose_2(lambda a, b: a % b, other)
 
     def __rmod__(self, other):
-        return self.compose_2(lambda a, b: b % a)(self, other)
+        return self.compose_2(lambda a, b: b % a, other)
 
     def __pow__(self, other):
-        return self.compose_2(lambda a, b: a ** b)(self, other)
+        return self.compose_2(lambda a, b: a ** b, other)
 
     def __rpow__(self, other):
-        return self.compose_2(lambda a, b: b ** a)(self, other)
+        return self.compose_2(lambda a, b: b ** a, other)
 
     def __getitem__(self, other):
-        return self.compose_2(lambda a, b: a[b])(self, other)
+        return self.compose_2(lambda a, b: a[b], other)
 
     def __eq__(self, other):
-        return self.compose_2(lambda a, b: a == b)(self, other)
+        return self.compose_2(lambda a, b: a == b, other)
 
     def __le__(self, other):
-        return self.compose_2(lambda a, b: a <= b)(self, other)
+        return self.compose_2(lambda a, b: a <= b, other)
 
     def __lt__(self, other):
-        return self.compose_2(lambda a, b: a < b)(self, other)
+        return self.compose_2(lambda a, b: a < b, other)
 
     def __ge__(self, other):
-        return self.compose_2(lambda a, b: a >= b)(self, other)
+        return self.compose_2(lambda a, b: a >= b, other)
 
     def __gt__(self, other):
-        return self.compose_2(lambda a, b: a > b)(self, other)
+        return self.compose_2(lambda a, b: a > b, other)
 
+    def __ne__(self, other):
+        return self.compose_2(lambda a, b: a != b, other)
+
+    def __and__(self, other):
+        return self.compose_2(lambda a, b: a & b, other)
+
+    def __lshift__(self, other):
+        return self.compose_2(operator.lshift, other)
+
+    def __rshift__(self, other):
+        return self.compose_2(operator.rshift, other)
+
+    def __inv__(self, other):
+        return self.compose_1(lambda a: ~a)
+
+    def __not__(self):
+        return self.compose_1(lambda a: not a)
+
+    def __abs__(self):
+        return self.compose_1(lambda a: abs(a))
