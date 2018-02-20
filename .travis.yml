@@ -1,5 +1,10 @@
 language: python
 python:
   - "3.5"
-install: "pip install -r requirements.txt"
-script: "nose2"
+install: 
+  - "pip install -r requirements.txt"
+  - "pip install codecov coverage nose2[coverage_plugin]"
+
+script: "nose2 -C"
+after_success:
+  - codecov
