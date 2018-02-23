@@ -1,4 +1,5 @@
 import operator
+from tools import flip
 
 def identity_func(x):
     return x
@@ -53,70 +54,70 @@ class PlaceHolder():
         return PlaceHolder(action=lambda *x, **y: f(self(*x, **y)), arg_name=self.arg_pos)
 
     def __add__(self, other):
-        return self.compose_2(lambda a, b: a + b, other)
+        return self.compose_2(operator.add, other)
 
     def __radd__(self, other):
-        return self.compose_2(lambda a, b: b + a, other)
+        return self.compose_2(flip(operator.add), other)
 
     def __sub__(self, other):
-        return self.compose_2(lambda a, b: a - b, other)
+        return self.compose_2(operator.sub, other)
 
     def __rsub__(self, other):
-        return self.compose_2(lambda a, b: b - a, other)
+        return self.compose_2(flip(operator.sub), other)
 
     def __mul__(self, other):
-        return self.compose_2(lambda a, b: a * b, other)
+        return self.compose_2(operator.mul, other)
 
     def __rmul__(self, other):
-        return self.compose_2(lambda a, b: b * a, other)
+        return self.compose_2(flip(operator.mul), other)
 
     def __truediv__(self, other):
-        return self.compose_2(lambda a, b: a / b, other)
+        return self.compose_2(operator.truediv, other)
 
     def __rtruediv__(self, other):
-        return self.compose_2(lambda a, b: b / a, other)
+        return self.compose_2(flip(operator.truediv), other)
 
     def __floordiv__(self, other):
-        return self.compose_2(lambda a, b: a // b, other)
+        return self.compose_2(operator.floordiv, other)
 
     def __rfloordiv__(self, other):
-        return self.compose_2(lambda a, b: b // a, other)
+        return self.compose_2(flip(operator.floordiv), other)
 
     def __mod__(self, other):
-        return self.compose_2(lambda a, b: a % b, other)
+        return self.compose_2(operator.mod, other)
 
     def __rmod__(self, other):
-        return self.compose_2(lambda a, b: b % a, other)
+        return self.compose_2(flip(operator.mod), other)
 
     def __pow__(self, other):
-        return self.compose_2(lambda a, b: a ** b, other)
+        return self.compose_2(operator.pow, other)
 
     def __rpow__(self, other):
-        return self.compose_2(lambda a, b: b ** a, other)
+        return self.compose_2(flip(operator.pow), other)
 
     def __getitem__(self, other):
-        return self.compose_2(lambda a, b: a[b], other)
+        return self.compose_2(operator.getitem, other)
 
     def __eq__(self, other):
-        return self.compose_2(lambda a, b: a == b, other)
+        return self.compose_2(operator.eq, other)
 
     def __le__(self, other):
-        return self.compose_2(lambda a, b: a <= b, other)
+        return self.compose_2(operator.le, other)
 
     def __lt__(self, other):
-        return self.compose_2(lambda a, b: a < b, other)
+        return self.compose_2(operator.lt, other)
 
     def __ge__(self, other):
-        return self.compose_2(lambda a, b: a >= b, other)
+        return self.compose_2(operator.ge, other)
 
     def __gt__(self, other):
-        return self.compose_2(lambda a, b: a > b, other)
+        return self.compose_2(operator.gt, other)
 
     def __ne__(self, other):
-        return self.compose_2(lambda a, b: a != b, other)
+        return self.compose_2(operator.ne, other)
 
     def __and__(self, other):
-        return self.compose_2(lambda a, b: a & b, other)
+        return self.compose_2(operator.and_, other)
 
     def __lshift__(self, other):
         return self.compose_2(operator.lshift, other)
@@ -124,11 +125,14 @@ class PlaceHolder():
     def __rshift__(self, other):
         return self.compose_2(operator.rshift, other)
 
-    def __inv__(self, other):
-        return self.compose_1(lambda a: ~a)
+    def __invert__(self):
+        return self.compose_1(operator.inv)
 
     def __not__(self):
-        return self.compose_1(lambda a: not a)
+        return self.compose_1(operator.not_)
 
     def __abs__(self):
-        return self.compose_1(lambda a: abs(a))
+        return self.compose_1(operator.abs)
+
+    def __bool__(self):
+        return self.compose_1(operator.truth)

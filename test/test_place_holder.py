@@ -49,6 +49,7 @@ class PlaceHolderTest(unittest.TestCase):
     def test_sub_to_same(self):
         self.assertEqual((self._0 - self._0)(4), 0)
 
+
 class PlaceHolderBuilderTest(unittest.TestCase):
     def test_call(self):
         self.assertEqual(_(0)(1), 1)
@@ -141,6 +142,32 @@ class PlaceHolderBuilderTest(unittest.TestCase):
 
         self.assertEqual(_({'a': 'b', 'c': 1})[_(0)]('c'), 1)
 
+
+    def test_equal(self):
+        self.assertTrue((_(0) == 5)(5))
+        self.assertFalse((_(0) == 5)(6))
+        self.assertTrue((5 == _(0))(5))
+
+    def test_not_equal(self):
+        self.assertFalse((_(0) != 5)(5))
+        self.assertTrue((_(0) != 5)(6))
+
+    def test_less_than_or_equal(self):
+        self.assertTrue((_(0) <= 5)(5))
+        self.assertFalse((_(0) <= 5)(6))
+
+    def test_less_than(self):
+        self.assertFalse((_(0) < 5)(5))
+        self.assertTrue((_(0) < 5)(4))
+
+    def test_greater_than_or_equal(self):
+        self.assertTrue((_(0) >= 5)(5))
+        self.assertFalse((_(0) >= 6)(5))
+
+    def test_greater_than(self):
+        self.assertFalse((_(0) > 5)(5))
+        self.assertTrue((_(0) > 4)(5))
+
     def test_function_from_place_holder(self):
         def plus_one(x):
             return x + 1
@@ -158,3 +185,16 @@ class PlaceHolderBuilderTest(unittest.TestCase):
 
     def test_and(self):
         self.assertEqual((_(0) & _(1))({'1'}, {'1', '2'}), {'1'})
+
+    def test_lshift(self):
+        self.assertEqual((_(0) << 1)(2), 4)
+
+    def test_rshift(self):
+        self.assertEqual((_(0) >> 1)(4), 2)
+
+    def test_not(self):
+        self.assertEqual( not _(0) (False), True  )
+        self.assertEqual( (not (_(0) and _(1)))(False, False), True  )
+
+    def test_inv(self):
+        self.assertEqual( (~_(0))(4), -5)
