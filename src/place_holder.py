@@ -133,6 +133,3 @@ class PlaceHolder():
 
     def __abs__(self):
         return self.compose_1(operator.abs)
-
-    def __bool__(self):
-        return self.compose_1(operator.truth)

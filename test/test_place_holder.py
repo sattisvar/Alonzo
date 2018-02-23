@@ -192,9 +192,5 @@ class PlaceHolderBuilderTest(unittest.TestCase):
     def test_rshift(self):
         self.assertEqual((_(0) >> 1)(4), 2)
 
-    def test_not(self):
-        self.assertEqual( not _(0) (False), True  )
-        self.assertEqual( (not (_(0) and _(1)))(False, False), True  )
-
     def test_inv(self):
         self.assertEqual( (~_(0))(4), -5)
